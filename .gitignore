@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+uv.lock
+.pytest_cache/
+
+# Environment Variables (SECURITY RISK)
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project Specific (Don't share temp audio or test receipts)
+backend/static/*.mp3
+backend/tests/receipt.jpg
+backend/tests/voice_note.wav
