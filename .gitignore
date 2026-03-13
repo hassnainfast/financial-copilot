@@ -21,3 +21,5 @@ Thumbs.db
 backend/static/*.mp3
 backend/tests/receipt.jpg
 backend/tests/voice_note.wav
+backend/tests/working.ipynb
+*.ipynb_checkpoints/
