@@ -13,7 +13,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Model Configuration
 GROQ_MODEL = "llama-3.1-8b-instant"  # Fast text processing
-GEMINI_MODEL = "gemini-2.0-flash"  # Vision/complex tasks
+GEMINI_MODEL = "gemini-2.5-flash"  # Vision/complex tasks
 
 # Audio Configuration
 AUDIO_LANGUAGE = "ur-PK"  # Urdu Pakistan

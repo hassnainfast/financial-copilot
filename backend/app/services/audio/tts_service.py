@@ -16,7 +16,7 @@ class TTSService:
     def __init__(self):
         os.makedirs(AUDIO_DIR, exist_ok=True)
     
-    async def generate_audio(self, text: str, filename: str, voice: str = "female") -> Optional[str]:
+    async def generate_audio(self, text: str, filename: str, voice: str = "male") -> Optional[str]:
         """
         Generate Urdu audio from text.
         
@@ -29,7 +29,7 @@ class TTSService:
             Relative path to audio file or None if failed
         """
         try:
-            voice_name = self.URDU_VOICES.get(voice, self.URDU_VOICES["female"])
+            voice_name = self.URDU_VOICES.get(voice, self.URDU_VOICES["male"])
             filepath = os.path.join(AUDIO_DIR, filename)
             
             communicate = edge_tts.Communicate(text, voice_name)

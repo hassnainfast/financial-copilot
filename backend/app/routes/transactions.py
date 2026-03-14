@@ -2,15 +2,22 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from typing import Dict, Any, Optional
 from app.workflows.base import WorkflowState
 from app.workflows.manual_entry import ManualEntryWorkflow
+from app.workflows.image_entry import ImageEntryWorkflow  
 from app.services.llm.orchestrator import LLMOrchestrator
 from app.database import supabase
-from datetime import date
+from datetime import datetime
+from app.config import UPLOAD_DIR  
 import json
+import os
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
-# In-memory workflow storage (upgrade to Redis/Supabase later)
+# In-memory workflow storage
 active_workflows: Dict[str, WorkflowState] = {}
+
+# ==========================================
+# MANUAL ENTRY ENDPOINTS
+# ==========================================
 
 @router.post("/manual/start")
 async def start_manual_entry(
@@ -22,12 +29,8 @@ async def start_manual_entry(
     description: Optional[str] = Form(None),
     transaction_date: Optional[str] = Form(None)
 ):
-    """
-    Start manual transaction entry workflow.
-    Returns preview with audio confirmation.
-    """
+    """Start manual transaction entry workflow."""
     
-    # Prepare transaction data
     tx_data = {
         "user_id": user_id,
         "amount": amount,
@@ -35,21 +38,17 @@ async def start_manual_entry(
         "category": category,
         "customer_name": customer_name or "Cash Customer",
         "description": description or "",
-        "transaction_date": transaction_date or str(date.today()),
+        "transaction_date": transaction_date or str(datetime.now().date()),
         "source": "manual"
     }
     
-    # Create workflow state
     state = WorkflowState(workflow_type="manual_entry")
     workflow = ManualEntryWorkflow(state)
     
-    # Store state
     active_workflows[state.session_id] = state
     
-    # Execute first step (preview)
     result = await workflow.execute_step("preview", tx_data)
     
-    # Update stored state
     active_workflows[state.session_id] = state
     
     return {
@@ -65,23 +64,19 @@ async def continue_manual_entry(
 ):
     """Continue manual entry workflow (edit or confirm)."""
     
-    # Get workflow state
     if session_id not in active_workflows:
         raise HTTPException(status_code=404, detail="Session expired or not found")
     
     state = active_workflows[session_id]
     
-    # Check if expired
     if state.is_expired():
         del active_workflows[session_id]
         raise HTTPException(status_code=410, detail="Session expired")
     
     workflow = ManualEntryWorkflow(state)
     
-    # ⚠️ FIX: Determine the correct step to execute based on state, not user input
     current_step = state.current_step
     
-    # Parse corrections if provided
     user_input = {"action": action}
     if corrections:
         try:
@@ -89,14 +84,11 @@ async def continue_manual_entry(
         except json.JSONDecodeError:
             raise HTTPException(status_code=400, detail="Invalid corrections JSON")
     
-    # Execute workflow step
     result = await workflow.execute_step(current_step, user_input)
     
-    # Update or remove state
     if result["is_complete"]:
         del active_workflows[session_id]
     else:
-        # Update state with new current_step from result
         state.current_step = result.get("next_step", state.current_step)
         active_workflows[session_id] = state
     
@@ -105,54 +97,109 @@ async def continue_manual_entry(
         **result
     }
 
+# ==========================================
+# IMAGE ENTRY ENDPOINTS 
+# ==========================================
+
 @router.post("/image/scan")
 async def scan_receipt_image(
     file: UploadFile = File(...),
-    user_id: str = Form(...)
+    user_id: str = Form(...),
+    type: str = Form(...)  # NEW: income or expense from frontend button
 ):
     """
-    Scan receipt image and extract transaction data.
-    Uses Gemini Vision for image analysis.
+    Scan receipt image and extract items.
+    User selects income/expense BEFORE uploading.
     """
+    
+    # Validate file
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
     
     # Read image
     contents = await file.read()
     if not contents:
         raise HTTPException(status_code=400, detail="Empty file")
     
-    # Use LLM orchestrator to analyze image
-    llm = LLMOrchestrator()
+    # Save image temporarily (optional)
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    image_path = os.path.join(UPLOAD_DIR, f"receipt_{user_id}_{int(datetime.now().timestamp())}.jpg")
+    with open(image_path, "wb") as f:
+        f.write(contents)
     
-    try:
-        transactions = await llm.analyze_receipt(contents)
-        
-        if not transactions:
-            raise HTTPException(status_code=400, detail="No transactions found in image")
-        
-        # Return first transaction for confirmation
-        tx_data = transactions[0]
-        tx_data["user_id"] = user_id
-        tx_data["source"] = "image"
-        
-        # Create workflow state
-        state = WorkflowState(workflow_type="image_entry")
-        workflow = ManualEntryWorkflow(state)
-        
-        # Store state
-        active_workflows[state.session_id] = state
-        
-        # Execute preview step
-        result = await workflow.execute_step("preview", tx_data)
-        
-        return {
-            "session_id": state.session_id,
-            "extracted_items": len(transactions),
-            "all_items": transactions,
-            **result
-        }
+    # Create workflow state with ImageEntryWorkflow (FIXED!)
+    state = WorkflowState(workflow_type="image_entry")
+    workflow = ImageEntryWorkflow(state)  
     
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Image analysis failed: {str(e)}")
+    active_workflows[state.session_id] = state
+    
+    # Execute scan step
+    user_input = {
+        "image_bytes": contents,
+        "user_id": user_id,
+        "type": type  # Use the type from frontend
+    }
+    
+    result = await workflow.execute_step("scan_image", user_input)
+    
+    active_workflows[state.session_id] = state
+    
+    return {
+        "session_id": state.session_id,
+        **result
+    }
+
+@router.post("/image/continue")  # NEW ENDPOINT
+async def continue_image_entry(
+    session_id: str = Form(...),
+    action: str = Form(...),
+    item_index: Optional[int] = Form(None),
+    corrections: Optional[str] = Form(None),
+    confirm: Optional[bool] = Form(None)
+):
+    """Continue image entry workflow (edit/confirm items)."""
+    
+    if session_id not in active_workflows:
+        raise HTTPException(status_code=404, detail="Session expired or not found")
+    
+    state = active_workflows[session_id]
+    
+    if state.is_expired():
+        del active_workflows[session_id]
+        raise HTTPException(status_code=410, detail="Session expired")
+    
+    workflow = ImageEntryWorkflow(state)  # Use ImageEntryWorkflow
+    
+    # Build user input
+    user_input = {"action": action}
+    if item_index is not None:
+        user_input["item_index"] = item_index
+    if corrections:
+        try:
+            user_input["corrections"] = json.loads(corrections)
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="Invalid corrections JSON")
+    if confirm is not None:
+        user_input["confirm"] = confirm
+    
+    # Execute workflow step
+    result = await workflow.execute_step(state.current_step, user_input)
+    
+    # Update or remove state
+    if result["is_complete"]:
+        del active_workflows[session_id]
+    else:
+        state.current_step = result.get("next_step", state.current_step)
+        active_workflows[session_id] = state
+    
+    return {
+        "session_id": session_id,
+        **result
+    }
+
+# ==========================================
+# LIST ENDPOINTS 
+# ==========================================
 
 @router.get("/list")
 async def list_transactions(user_id: str):
