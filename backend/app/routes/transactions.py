@@ -183,7 +183,12 @@ async def continue_image_entry(
         user_input["confirm"] = confirm
     
     # Execute workflow step
-    result = await workflow.execute_step(state.current_step, user_input)
+    try:
+        result = await workflow.execute_step(state.current_step, user_input)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
     
     # Update or remove state
     if result["is_complete"]:

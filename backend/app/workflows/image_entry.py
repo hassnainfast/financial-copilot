@@ -15,9 +15,10 @@ class ImageEntryWorkflow(BaseWorkflow):
     1. scan_image → Extract items from receipt
     2. review_items → Show all items, ask for confirmation
     3. edit_item → User edits specific item
-    4. confirm_all → Final confirmation before save
-    5. update_inventory → Auto +/- stock
-    6. complete → All saved to DB
+    4. remove_item → User removes specific item
+    5. confirm_all → Final confirmation before save
+    6. update_inventory → Auto +/- stock
+    7. complete → All saved to DB
     """
     
     def __init__(self, state: WorkflowState):
@@ -35,10 +36,21 @@ class ImageEntryWorkflow(BaseWorkflow):
             return await self._review_items_step(user_input)
         elif step == "edit_item":
             return await self._edit_item_step(user_input)
+        elif step == "remove_item":
+            return await self._remove_item_step(user_input)
         elif step == "confirm_all":
             return await self._confirm_all_step(user_input)
         elif step == "update_inventory":
             return await self._update_inventory_step(user_input)
+        elif step == "error":
+            # Gracefully handle error state — allow restarting
+            return {
+                "next_step": "error",
+                "message": "Workflow encountered an error. Please start over.",
+                "audio_url": None,
+                "data": {},
+                "is_complete": True
+            }
         else:
             raise ValueError(f"Unknown step: {step}")
     
@@ -158,25 +170,57 @@ class ImageEntryWorkflow(BaseWorkflow):
         elif action == "edit_item":
             # User wants to edit specific item
             item_index = user_input.get("item_index", 0)
-            return {
-                "next_step": "edit_item",
-                "message": f"Edit item {item_index + 1}",
-                "audio_url": None,
-                "data": {
-                    "item_to_edit": self.state.data["items"][item_index] if item_index < len(self.state.data["items"]) else None
-                },
-                "is_complete": False
-            }
+            corrections = user_input.get("corrections")
+            
+            if corrections:
+                # Corrections provided → apply them directly (single-step edit)
+                self.state.current_step = "edit_item"
+                return await self._edit_item_step(user_input)
+            else:
+                # No corrections → just show the item for editing
+                return {
+                    "next_step": "edit_item",
+                    "message": f"Edit item {item_index + 1}",
+                    "audio_url": None,
+                    "data": {
+                        "item_to_edit": self.state.data["items"][item_index] if item_index < len(self.state.data["items"]) else None
+                    },
+                    "is_complete": False
+                }
         
         elif action == "add_item":
             # User wants to add missing item
-            return {
-                "next_step": "edit_item",
-                "message": "Add new item",
-                "audio_url": None,
-                "data": {"adding_new": True},
-                "is_complete": False
-            }
+            corrections = user_input.get("corrections")
+            
+            if corrections:
+                # Corrections provided → add item directly (single-step add)
+                user_input["adding_new"] = True
+                self.state.current_step = "edit_item"
+                return await self._edit_item_step(user_input)
+            else:
+                # No corrections → just show the add form
+                return {
+                    "next_step": "edit_item",
+                    "message": "Add new item",
+                    "audio_url": None,
+                    "data": {"adding_new": True},
+                    "is_complete": False
+                }
+        
+        elif action == "remove_item":
+            # User wants to remove specific item
+            item_index = user_input.get("item_index")
+            if item_index is None:
+                return {
+                    "next_step": "review_items",
+                    "message": "Please specify which item to remove",
+                    "audio_url": None,
+                    "data": {"items": self.state.data.get("items", [])},
+                    "is_complete": False
+                }
+            # Forward directly to remove step (single-step remove)
+            self.state.current_step = "remove_item"
+            return await self._remove_item_step(user_input)
         
         elif action == "retry_scan":
             # Low confidence - user wants to rescan
@@ -194,14 +238,27 @@ class ImageEntryWorkflow(BaseWorkflow):
     async def _edit_item_step(self, user_input: Dict[str, Any]) -> Dict[str, Any]:
         """Step 3: Edit specific item or add new item."""
         
-        corrections = user_input.get("corrections", {})
+        corrections = user_input.get("corrections")  # Can be None, string, or dict
         item_index = user_input.get("item_index")
         adding_new = user_input.get("adding_new", False)
         
         items = self.state.data.get("items", [])
         
-        if adding_new:
-            # Add new item to list
+        # Check if user is SUBMITTING corrections
+        if corrections and adding_new:
+            # Adding a NEW item with corrections
+            if isinstance(corrections, str):
+                try:
+                    corrections = json.loads(corrections)
+                except json.JSONDecodeError:
+                    return {
+                        "next_step": "error",
+                        "message": "Invalid corrections JSON",
+                        "audio_url": None,
+                        "data": {},
+                        "is_complete": False
+                    }
+            
             new_item = {
                 "item_index": len(items),
                 "item_name": corrections.get("item_name", "Unknown Item"),
@@ -213,21 +270,196 @@ class ImageEntryWorkflow(BaseWorkflow):
                 "edited": True
             }
             items.append(new_item)
+            
+            # Update state
+            self.state.data["items"] = items
+            self.state.data["total_amount"] = sum(item.get("amount", 0) for item in items)
+            
             message = f"نیا آئٹم شامل ہو گیا: {new_item['item_name']}"
-        else:
-            # Update existing item
-            if item_index is not None and item_index < len(items):
+            urdu_message = await self.llm.generate_audio_script(message, "item_added")
+            audio_path = await self.tts.generate_audio(
+                urdu_message,
+                f"image_add_{self.state.session_id}.mp3"
+            )
+            
+            self.state.current_step = "review_items"
+            
+            return {
+                "next_step": "review_items",
+                "message": f"Added: {new_item['item_name']}",
+                "audio_url": f"/{audio_path}".replace("\\", "/") if audio_path else None,
+                "data": {
+                    "items": items,
+                    "total_amount": self.state.data["total_amount"],
+                    "total_items": len(items),
+                    "new_item": new_item
+                },
+                "is_complete": False
+            }
+        
+        elif corrections and item_index is not None and not adding_new:
+            # Parse corrections if they're a JSON string
+            if isinstance(corrections, str):
+                try:
+                    corrections = json.loads(corrections)
+                except json.JSONDecodeError:
+                    return {
+                        "next_step": "error",
+                        "message": "Invalid corrections JSON",
+                        "audio_url": None,
+                        "data": {},
+                        "is_complete": False
+                    }
+            
+            # Apply corrections to the item
+            if 0 <= item_index < len(items):
                 original_item = items[item_index].copy()
                 
-                # Use LLM to apply corrections
-                updated_item = await self.llm.correct_transaction(original_item, json.dumps(corrections))
+                # Update item with corrections
+                updated_item = original_item.copy()
+                updated_item.update(corrections)
                 updated_item["edited"] = True
                 updated_item["item_index"] = item_index
                 
                 items[item_index] = updated_item
-                message = f"آئٹم {item_index + 1} اپڈیٹ ہو گیا"
+                
+                # Generate user-friendly message
+                changes = []
+                if "amount" in corrections:
+                    changes.append(f"قیمت {original_item.get('amount')} سے {corrections['amount']}")
+                if "quantity" in corrections:
+                    changes.append(f"تعداد {original_item.get('quantity')} سے {corrections['quantity']}")
+                if "item_name" in corrections:
+                    changes.append(f"نام {corrections['item_name']}")
+                if "category" in corrections:
+                    changes.append(f"کیٹیگری {corrections['category']}")
+                
+                change_text = "، ".join(changes) if changes else "اپڈیٹ ہو گیا"
+                message = f"آئٹم {item_index + 1} اپڈیٹ: {change_text}"
+                
+                # Update state
+                self.state.data["items"] = items
+                
+                # Recalculate total
+                self.state.data["total_amount"] = sum(item.get("amount", 0) for item in items)
+                
+                # Generate Urdu audio
+                urdu_message = await self.llm.generate_audio_script(message, "item_updated")
+                audio_path = await self.tts.generate_audio(
+                    urdu_message,
+                    f"image_edit_{self.state.session_id}.mp3"
+                )
+                
+                # ✅ CRITICAL: Return to review_items after applying corrections
+                self.state.current_step = "review_items"
+                
+                return {
+                    "next_step": "review_items",  # ← Was incorrectly "edit_item"
+                    "message": message,
+                    "audio_url": f"/{audio_path}".replace("\\", "/") if audio_path else None,
+                    "data": {
+                        "items": items,
+                        "total_amount": self.state.data["total_amount"],
+                        "total_items": len(items),
+                        "updated_item": updated_item
+                    },
+                    "is_complete": False
+                }
             else:
-                message = "Item not found"
+                return {
+                    "next_step": "error",
+                    "message": f"Item index {item_index} not found",
+                    "audio_url": None,
+                    "data": {},
+                    "is_complete": False
+                }
+        
+        else:
+            # User just wants to SEE the item to edit (no corrections submitted yet)
+            if item_index is not None and 0 <= item_index < len(items):
+                return {
+                    "next_step": "edit_item",
+                    "message": f"Edit item {item_index + 1}",
+                    "audio_url": None,
+                    "data": {
+                        "item_to_edit": items[item_index]
+                    },
+                    "is_complete": False
+                }
+            elif adding_new:
+                return {
+                    "next_step": "edit_item",
+                    "message": "Add new item",
+                    "audio_url": None,
+                    "data": {"adding_new": True},
+                    "is_complete": False
+                }
+            else:
+                return {
+                    "next_step": "error",
+                    "message": "Item index required for editing",
+                    "audio_url": None,
+                    "data": {},
+                    "is_complete": False
+                }
+    
+    async def _remove_item_step(self, user_input: Dict[str, Any]) -> Dict[str, Any]:
+        """Remove a specific item from the scanned items list."""
+        
+        item_index = user_input.get("item_index")
+        items = self.state.data.get("items", [])
+        
+        # Validate index
+        if item_index is None or item_index < 0 or item_index >= len(items):
+            message = "آئٹم نہیں ملا"
+            urdu_message = await self.llm.generate_audio_script(message, "item_not_found")
+            audio_path = await self.tts.generate_audio(
+                urdu_message,
+                f"image_remove_error_{self.state.session_id}.mp3"
+            )
+            
+            self.state.current_step = "review_items"
+            
+            return {
+                "next_step": "review_items",
+                "message": "Item not found",
+                "audio_url": f"/{audio_path}".replace("\\", "/") if audio_path else None,
+                "data": {
+                    "items": items,
+                    "total_amount": self.state.data.get("total_amount", 0)
+                },
+                "is_complete": False
+            }
+        
+        # Prevent removing the last item
+        if len(items) <= 1:
+            message = "آخری آئٹم نہیں ہٹا سکتے۔ منسوخ کرنے کے لیے کنفرم پر جائیں۔"
+            urdu_message = await self.llm.generate_audio_script(message, "cannot_remove_last")
+            audio_path = await self.tts.generate_audio(
+                urdu_message,
+                f"image_remove_last_{self.state.session_id}.mp3"
+            )
+            
+            self.state.current_step = "review_items"
+            
+            return {
+                "next_step": "review_items",
+                "message": "Cannot remove the last item. Use cancel instead.",
+                "audio_url": f"/{audio_path}".replace("\\", "/") if audio_path else None,
+                "data": {
+                    "items": items,
+                    "total_amount": self.state.data.get("total_amount", 0)
+                },
+                "is_complete": False
+            }
+        
+        # Remove the item
+        removed_item = items.pop(item_index)
+        removed_name = removed_item.get("item_name", "Unknown")
+        
+        # Re-index remaining items
+        for i, item in enumerate(items):
+            item["item_index"] = i
         
         # Update state
         self.state.data["items"] = items
@@ -236,21 +468,23 @@ class ImageEntryWorkflow(BaseWorkflow):
         self.state.data["total_amount"] = sum(item.get("amount", 0) for item in items)
         
         # Generate audio
-        urdu_message = await self.llm.generate_audio_script(message, "item_updated")
+        message = f"{removed_name} ہٹا دیا گیا۔ اب {len(items)} آئٹمز ہیں۔ کل {self.state.data['total_amount']} روپے۔"
+        urdu_message = await self.llm.generate_audio_script(message, "item_removed")
         audio_path = await self.tts.generate_audio(
             urdu_message,
-            f"image_edit_{self.state.session_id}.mp3"
+            f"image_remove_{self.state.session_id}.mp3"
         )
         
         self.state.current_step = "review_items"
         
         return {
             "next_step": "review_items",
-            "message": message,
+            "message": f"Removed: {removed_name}. {len(items)} items remaining.",
             "audio_url": f"/{audio_path}".replace("\\", "/") if audio_path else None,
             "data": {
                 "items": items,
-                "total_amount": self.state.data["total_amount"]
+                "total_amount": self.state.data["total_amount"],
+                "removed_item": removed_item
             },
             "is_complete": False
         }
