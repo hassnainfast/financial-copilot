@@ -1,5 +1,5 @@
-﻿import json
-from typing import Dict, Any
+import json
+from typing import Dict, Any, List
 from app.services.llm.groq_client import GroqClient
 from app.services.llm.gemini_client import GeminiClient
 from app.prompts.extraction_prompt import IMAGE_ANALYSIS_PROMPT
@@ -16,6 +16,28 @@ class LLMOrchestrator:
     async def generate_confirmation_message(self, data: Dict[str, Any], language: str = "ur") -> str:
         prompt = f"Generate {language} confirmation for: Amount {data.get('amount')}, Type {data.get('type')}"
         return await self.groq.generate_text(prompt)
+    
+    async def extract_audio_transaction(self, messages: List[Dict[str, str]]) -> Dict[str, Any]:
+        """
+        Extract transaction data from audio conversation using multi-turn chat.
+        
+        Args:
+            messages: Full conversation history with system prompt
+        
+        Returns:
+            Dict with: new_items, edits, removals, completion_detected, summary_urdu
+        """
+        result = await self.groq.generate_chat_json(messages, temperature=0.3, max_tokens=2000)
+        
+        # Ensure required keys exist with defaults
+        result.setdefault("new_items", [])
+        result.setdefault("edits", [])
+        result.setdefault("removals", [])
+        result.setdefault("completion_detected", False)
+        result.setdefault("summary_urdu", "")
+        result.setdefault("clarification_needed", None)
+        
+        return result
     
     async def analyze_receipt(self, image_bytes: bytes):
         prompt = "Analyze receipt. Return JSON list with amount, type, category, customer_name."

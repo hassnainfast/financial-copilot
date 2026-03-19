@@ -3,6 +3,7 @@ from typing import Dict, Any, Optional
 from app.workflows.base import WorkflowState
 from app.workflows.manual_entry import ManualEntryWorkflow
 from app.workflows.image_entry import ImageEntryWorkflow  
+from app.workflows.audio_entry import AudioEntryWorkflow
 from app.services.llm.orchestrator import LLMOrchestrator
 from app.database import supabase
 from datetime import datetime
@@ -181,6 +182,118 @@ async def continue_image_entry(
             raise HTTPException(status_code=400, detail="Invalid corrections JSON")
     if confirm is not None:
         user_input["confirm"] = confirm
+    
+    # Execute workflow step
+    try:
+        result = await workflow.execute_step(state.current_step, user_input)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    # Update or remove state
+    if result["is_complete"]:
+        del active_workflows[session_id]
+    else:
+        state.current_step = result.get("next_step", state.current_step)
+        active_workflows[session_id] = state
+    
+    return {
+        "session_id": session_id,
+        **result
+    }
+
+# ==========================================
+# AUDIO ENTRY ENDPOINTS
+# ==========================================
+
+@router.post("/audio/start")
+async def start_audio_entry(
+    user_id: str = Form(...),
+    type: str = Form(...)  # "income" or "expense"
+):
+    """
+    Start an audio data entry session.
+    
+    The user selects income/expense on the frontend, then this endpoint
+    initializes the session and returns a welcome audio prompt in Urdu.
+    """
+    
+    # Validate type
+    if type not in ["income", "expense"]:
+        raise HTTPException(status_code=400, detail="Type must be 'income' or 'expense'")
+    
+    # Create workflow state
+    state = WorkflowState(workflow_type="audio_entry")
+    workflow = AudioEntryWorkflow(state)
+    
+    active_workflows[state.session_id] = state
+    
+    # Execute start step
+    result = await workflow.execute_step("start", {
+        "user_id": user_id,
+        "type": type
+    })
+    
+    active_workflows[state.session_id] = state
+    
+    return {
+        "session_id": state.session_id,
+        **result
+    }
+
+@router.post("/audio/continue")
+async def continue_audio_entry(
+    session_id: str = Form(...),
+    audio_file: Optional[UploadFile] = File(None),
+    user_text: Optional[str] = Form(None)
+):
+    """
+    Continue an audio data entry session.
+    
+    Send either:
+    - audio_file: Audio recording to transcribe (STT) and process
+    - user_text: Pre-transcribed text (if frontend does STT)
+    
+    Returns extracted items, chat history, summary audio, and completion status.
+    """
+    
+    if session_id not in active_workflows:
+        raise HTTPException(status_code=404, detail="Session expired or not found")
+    
+    state = active_workflows[session_id]
+    
+    if state.is_expired():
+        del active_workflows[session_id]
+        raise HTTPException(status_code=410, detail="Session expired")
+    
+    workflow = AudioEntryWorkflow(state)
+    
+    # Build user input
+    user_input = {}
+    
+    # Handle audio file upload
+    if audio_file and audio_file.filename:
+        contents = await audio_file.read()
+        if contents:
+            os.makedirs(UPLOAD_DIR, exist_ok=True)
+            audio_path = os.path.join(
+                UPLOAD_DIR,
+                f"audio_{session_id}_{int(datetime.now().timestamp())}.wav"
+            )
+            with open(audio_path, "wb") as f:
+                f.write(contents)
+            user_input["audio_file_path"] = audio_path
+    
+    # Handle text input
+    if user_text:
+        user_input["user_text"] = user_text
+    
+    if not user_input:
+        raise HTTPException(
+            status_code=400,
+            detail="Either audio_file or user_text is required"
+        )
     
     # Execute workflow step
     try:
