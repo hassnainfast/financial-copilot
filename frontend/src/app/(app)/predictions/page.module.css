@@ -1,0 +1,61 @@
+.iconCircle {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: var(--space-2);
+}
+
+.insightCard {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+  padding: var(--space-4) var(--space-5);
+  border-left-width: 4px;
+  border-left-style: solid;
+}
+
+.insightCard.positive { border-left-color: var(--primary); }
+.insightCard.warning { border-left-color: var(--secondary); }
+.insightCard.neutral { border-left-color: #3b82f6; }
+
+.insightIcon {
+  font-size: 1.5rem;
+  margin-top: 2px;
+}
+
+.chartContainer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 200px;
+  padding-top: var(--space-4);
+}
+
+.barWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.bars {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  height: 150px;
+  width: 100%;
+  justify-content: center;
+}
+
+.barIncome, .barExpense {
+  width: 12px;
+  border-radius: 4px 4px 0 0;
+  transition: height 1s ease-out;
+}
+
+.barIncome { background: var(--primary); }
+.barExpense { background: var(--tertiary); }

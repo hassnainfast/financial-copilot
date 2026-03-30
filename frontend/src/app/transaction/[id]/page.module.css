@@ -1,0 +1,36 @@
+.amountHero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8) 0;
+  text-align: center;
+}
+
+.heroAmount {
+  font-size: 3rem;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.detailRow:last-child {
+  border-bottom: none;
+}
+
+.detailLabel {
+  font-size: 0.8125rem;
+  color: var(--on-surface-variant);
+}
+
+.detailValue {
+  font-weight: 500;
+  color: var(--on-surface);
+  text-align: right;
+  max-width: 60%;
+}

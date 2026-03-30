@@ -1,0 +1,172 @@
+.splashContainer {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-6);
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+/* Background glow effects */
+.bgGlow1 {
+  position: absolute;
+  top: -20%;
+  right: -30%;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(104, 219, 169, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.bgGlow2 {
+  position: absolute;
+  bottom: -10%;
+  left: -20%;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 185, 95, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Logo */
+.logoArea {
+  margin-bottom: var(--space-8);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logoArea.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.logoCircle {
+  width: 6rem;
+  height: 6rem;
+  border-radius: var(--radius-full);
+  background: var(--gradient-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+.logoIcon {
+  font-size: 2.5rem;
+}
+
+/* Brand text */
+.brandArea {
+  text-align: center;
+  margin-bottom: var(--space-10);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.brandArea.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.brandUrdu {
+  font-family: var(--font-urdu);
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  direction: rtl;
+  line-height: 1.5;
+  margin-bottom: var(--space-1);
+}
+
+.brandEnglish {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--on-surface);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-6);
+}
+
+.taglineUrdu {
+  font-family: var(--font-urdu);
+  direction: rtl;
+  font-size: 1.1rem;
+  color: var(--on-surface-variant);
+  line-height: 2;
+}
+
+.taglineEnglish {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--outline);
+  margin-top: var(--space-1);
+}
+
+/* Features */
+.features {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: var(--space-12);
+  opacity: 0;
+  transform: translateY(15px);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.features.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.featureChip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface-container);
+  border-radius: var(--radius-full);
+  font-family: var(--font-urdu);
+  font-size: 0.8rem;
+  color: var(--on-surface-variant);
+  direction: rtl;
+  line-height: 1.8;
+}
+
+/* CTA */
+.ctaArea {
+  width: 100%;
+  max-width: 320px;
+  opacity: 0;
+  transform: translateY(15px);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ctaArea.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ctaBtn {
+  font-size: 1.125rem;
+}
+
+.ctaBtnUrdu {
+  font-family: var(--font-urdu);
+  direction: rtl;
+  line-height: 1.8;
+}
+
+.ctaBtnDivider {
+  opacity: 0.3;
+  margin: 0 var(--space-2);
+}

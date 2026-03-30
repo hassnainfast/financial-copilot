@@ -1,0 +1,87 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 14, 32, 0.8);
+  z-index: 999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeInOverlay 0.2s ease;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.addMenu {
+  max-width: 430px;
+  width: 100%;
+  padding: var(--space-6) var(--space-5);
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.addOption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface-container-high);
+  border: none;
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-align: left;
+  opacity: 0;
+  animation: slideUpOption 0.3s ease forwards;
+}
+
+@keyframes slideUpOption {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.addOption:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.addOption:active {
+  transform: scale(0.98);
+}
+
+.addOptionIcon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.addOptionText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.addOptionLabel {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--on-surface);
+}
+
+.addOptionUrdu {
+  font-family: var(--font-urdu);
+  direction: rtl;
+  font-size: 0.85rem;
+  color: var(--on-surface-variant);
+  line-height: 1.8;
+  text-align: right;
+}

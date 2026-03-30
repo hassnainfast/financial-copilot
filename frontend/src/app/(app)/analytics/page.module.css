@@ -1,0 +1,115 @@
+.headerUrdu {
+  font-family: var(--font-urdu);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  direction: rtl;
+  line-height: 1.8;
+}
+
+.profitCard {
+  padding: var(--space-8);
+}
+
+/* Bar Chart */
+.barChart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  height: 14rem;
+  padding: var(--space-4) 0;
+}
+
+.barGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  height: 100%;
+}
+
+.bars {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  flex: 1;
+  width: 100%;
+}
+
+.barIncome {
+  flex: 1;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  min-height: 4px;
+  transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.barExpense {
+  flex: 1;
+  background: linear-gradient(180deg, var(--tertiary), var(--tertiary-container));
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  min-height: 4px;
+  transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.barLabel {
+  font-family: var(--font-label);
+  font-size: 0.6875rem;
+  color: var(--on-surface-variant);
+  text-transform: uppercase;
+}
+
+.chartLegend {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-6);
+  padding-top: var(--space-4);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.75rem;
+  color: var(--on-surface-variant);
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+/* Progress Bar */
+.progressBar {
+  height: 6px;
+  background: var(--surface-container-lowest);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.6s ease;
+}
+
+/* Desktop: Analytics layout */
+.analyticsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+}
+
+@media (max-width: 768px) {
+  .analyticsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .barChart {
+    height: 10rem;
+  }
+}

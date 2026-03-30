@@ -1,0 +1,51 @@
+.headerUrdu {
+  font-family: var(--font-urdu);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  direction: rtl;
+  line-height: 1.8;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+}
+
+.itemIcon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
+  background: rgba(255, 185, 95, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.errorCard {
+  text-align: center;
+  padding: var(--space-8) var(--space-5);
+  background: var(--surface-container);
+  border-radius: var(--radius-xl);
+  color: var(--on-surface-variant);
+}
+
+/* Desktop: inventory grid */
+.inventoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .inventoryGrid {
+    grid-template-columns: 1fr;
+  }
+}
