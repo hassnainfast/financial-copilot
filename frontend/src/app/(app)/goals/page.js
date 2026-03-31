@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { formatCurrency } from '@/lib/constants';
+import { TrendingUp, Shield, Target, CheckCircle, Award } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function GoalsPage() {
@@ -27,7 +28,7 @@ export default function GoalsPage() {
           <div className={styles.strategyCard}>
             <div className={styles.strategyCardHeader}>
               <div className={`${styles.strategyIcon} ${styles.iconSave}`}>
-                📈
+                <TrendingUp size={28} />
               </div>
               <h2 className={styles.strategyTitle}>Save Maximize Strategy</h2>
             </div>
@@ -38,7 +39,7 @@ export default function GoalsPage() {
           <div className={styles.strategyCard}>
             <div className={styles.strategyCardHeader}>
               <div className={`${styles.strategyIcon} ${styles.iconLimit}`}>
-                🛡️
+                <Shield size={28} />
               </div>
               <h2 className={styles.strategyTitle}>Limit Spending Threshold</h2>
             </div>
@@ -49,7 +50,7 @@ export default function GoalsPage() {
           <div className={styles.strategyCard}>
             <div className={styles.strategyCardHeader}>
               <div className={`${styles.strategyIcon} ${styles.iconProfit}`}>
-                🎯
+                <Target size={28} />
               </div>
               <h2 className={styles.strategyTitle}>Profit Target Milestone</h2>
             </div>

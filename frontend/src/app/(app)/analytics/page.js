@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { listTransactions } from '@/lib/api';
 import { DEFAULT_USER_ID, formatCurrency, getCategoryInfo, formatDate } from '@/lib/constants';
+import { BarChart3, TrendingUp, TrendingDown } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function AnalyticsPage() {

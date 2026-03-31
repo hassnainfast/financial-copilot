@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { startAudioEntry, continueAudioEntry, getAudioUrl } from '@/lib/api';
 import { DEFAULT_USER_ID, formatCurrency } from '@/lib/constants';
+import { Mic, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import Toast from '@/components/Toast';
 import styles from './page.module.css';
 
@@ -130,6 +131,7 @@ export default function VoiceEntryPage() {
           ←
         </button>
         <div>
+          <Mic size={24} className="text-primary" style={{ marginBottom: '0.25rem' }} />
           <h1 className="title-lg">آواز سے اندراج</h1>
           <span className="body-sm text-muted">Voice Entry</span>
         </div>
@@ -169,8 +171,9 @@ export default function VoiceEntryPage() {
             </div>
 
             {error && (
-              <div className="badge badge-danger mb-4" style={{ padding: 'var(--space-3) var(--space-4)', width: '100%', justifyContent: 'center' }}>
-                ⚠️ {error}
+              <div className="badge badge-danger mb-4" style={{ padding: 'var(--space-3) var(--space-4)', width: '100%', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <AlertCircle size={18} />
+                {error}
               </div>
             )}
 
@@ -182,7 +185,10 @@ export default function VoiceEntryPage() {
               {loading ? (
                 <span className="spinner" style={{ width: '1.25rem', height: '1.25rem' }} />
               ) : (
-                <>شروع کریں | Start Session</>
+                <>
+                  <Mic size={20} />
+                  شروع کریں | Start Session
+                </>
               )}
             </button>
           </div>

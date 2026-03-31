@@ -1,6 +1,22 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import {
+  Bell,
+  Building2,
+  ChevronRight,
+  Download,
+  Moon,
+  Palette,
+  RefreshCw,
+  Server,
+  Settings2,
+  ShieldCheck,
+  Store,
+  Sun,
+  Trash2,
+  UserRound,
+} from 'lucide-react';
 import { healthCheck } from '@/lib/api';
 import styles from './page.module.css';
 
@@ -175,13 +191,31 @@ export default function SettingsPage() {
     }
   }
 
+  const statusMeta = {
+    connected: {
+      label: 'Connected to backend (localhost:8000)',
+      icon: ShieldCheck,
+    },
+    disconnected: {
+      label: 'Backend not reachable',
+      icon: Server,
+    },
+    checking: {
+      label: 'Checking connection...',
+      icon: RefreshCw,
+    },
+  };
+
+  const backendInfo = statusMeta[backendStatus] || statusMeta.checking;
+  const BackendIcon = backendInfo.icon;
+
   const settingsSections = [
     {
       title: 'Appearance',
-      icon: '🎨',
+      icon: Palette,
       items: [
         {
-          icon: darkMode ? '🌙' : '☀️',
+          icon: darkMode ? Moon : Sun,
           title: 'Dark Mode',
           subtitle: darkMode ? 'Dark theme enabled' : 'Light theme enabled',
           action: handleDarkModeToggle,
@@ -189,7 +223,7 @@ export default function SettingsPage() {
           toggleValue: darkMode,
         },
         {
-          icon: '🔔',
+          icon: Bell,
           title: 'Notifications',
           subtitle: notifications ? 'Enabled' : 'Disabled',
           action: handleNotificationsToggle,
@@ -200,16 +234,16 @@ export default function SettingsPage() {
     },
     {
       title: 'Business Info',
-      icon: '🏢',
+      icon: Building2,
       items: [
         {
-          icon: '🏪',
+          icon: Store,
           title: 'Shop Name',
           subtitle: shopName || 'Click to set',
           action: openShopNameModal,
         },
         {
-          icon: '👤',
+          icon: UserRound,
           title: 'Owner Name',
           subtitle: ownerName || 'Click to set',
           action: openOwnerNameModal,
@@ -218,16 +252,16 @@ export default function SettingsPage() {
     },
     {
       title: 'Data & Backup',
-      icon: '💾',
+      icon: Settings2,
       items: [
         {
-          icon: '📤',
+          icon: Download,
           title: 'Export Settings',
           subtitle: 'Download settings as JSON',
           action: handleExport,
         },
         {
-          icon: '🗑️',
+          icon: Trash2,
           title: 'Clear Settings',
           subtitle: 'Reset all settings to defaults',
           action: handleClearData,
@@ -249,65 +283,79 @@ export default function SettingsPage() {
       </header>
 
       <main className="page-content">
-        {/* Backend Status */}
         <section className="section">
-          <div className="glass-card">
-            <div className="flex items-center gap-3">
-              <div className={`${styles.statusDot} ${styles[backendStatus]}`} />
-              <div className="flex-1">
-                <span className="title-sm">Server Connection</span>
-                <div className="body-sm text-muted mt-1">
-                  {backendStatus === 'connected' && '✅ Connected to backend (localhost:8000)'}
-                  {backendStatus === 'disconnected' && '❌ Backend not reachable'}
-                  {backendStatus === 'checking' && '⏳ Checking connection...'}
-                </div>
+          <div className={`glass-card ${styles.systemCard}`}>
+            <div className={styles.systemCardHead}>
+              <div className={styles.systemCardTitleWrap}>
+                <span className={styles.systemCardKicker}>System Health</span>
+                <h2 className={styles.systemCardTitle}>Backend Connection</h2>
               </div>
               <button className="btn btn-ghost btn-sm" onClick={checkBackend}>
-                🔄 Retry
+                <RefreshCw size={15} aria-hidden="true" />
+                <span>Retry</span>
               </button>
+            </div>
+            <div className={styles.statusRow}>
+              <div className={`${styles.statusDot} ${styles[backendStatus]}`} />
+              <span className={styles.statusBadge}>{backendStatus}</span>
+            </div>
+            <div className={styles.statusInfo}>
+              <BackendIcon size={18} aria-hidden="true" className={backendStatus === 'checking' ? styles.spin : ''} />
+              <span>{backendInfo.label}</span>
             </div>
           </div>
         </section>
 
-        {/* Settings Sections */}
-        {settingsSections.map((section, si) => (
-          <section key={si} className="section">
-            <div className="section-header">
-              <h2 className="section-title">{section.icon} {section.title}</h2>
-            </div>
-            <div className="flex flex-col gap-2">
-              {section.items.map((item, ii) => (
-                <button
-                  key={ii}
-                  className={`${styles.settingItem} ${item.danger ? styles.danger : ''}`}
-                  onClick={item.action}
-                >
-                  <span className={styles.settingIcon}>{item.icon}</span>
-                  <div className="flex-1" style={{ textAlign: 'left' }}>
-                    <div className={styles.settingTitle}>{item.title}</div>
-                    <div className={styles.settingSubtitle}>{item.subtitle}</div>
-                  </div>
-                  {item.hasToggle ? (
-                    <div className={`${styles.toggleSwitch} ${item.toggleValue ? styles.toggleOn : ''}`}>
-                      <div className={styles.toggleThumb} />
+        <div className={styles.settingsGrid}>
+          {settingsSections.map((section, si) => {
+            const SectionIcon = section.icon;
+            return (
+              <section key={si} className="section">
+                <div className={`glass-card ${styles.sectionCard}`}>
+                  <div className={styles.sectionHead}>
+                    <div className={styles.sectionIconWrap}>
+                      <SectionIcon size={18} aria-hidden="true" />
                     </div>
-                  ) : (
-                    <span className={styles.settingArrow}>›</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </section>
-        ))}
+                    <h2 className={styles.sectionTitle}>{section.title}</h2>
+                  </div>
 
-        <section className="section" style={{ textAlign: 'center', padding: 'var(--space-8) 0' }}>
-          <p className="body-sm text-muted">Hisaab v1.0.0</p>
-          <p className="label-sm text-muted mt-1">AI-Powered Financial Copilot</p>
-        </section>
+                  <div className={styles.itemsList}>
+                    {section.items.map((item, ii) => {
+                      const ItemIcon = item.icon;
+                      return (
+                        <button
+                          key={ii}
+                          className={`${styles.settingItem} ${item.danger ? styles.danger : ''}`}
+                          onClick={item.action}
+                        >
+                          <span className={styles.settingIcon}>
+                            <ItemIcon size={18} aria-hidden="true" />
+                          </span>
+                          <div className={styles.settingContent}>
+                            <div className={styles.settingTitle}>{item.title}</div>
+                            <div className={styles.settingSubtitle}>{item.subtitle}</div>
+                          </div>
+                          {item.hasToggle ? (
+                            <div className={`${styles.toggleSwitch} ${item.toggleValue ? styles.toggleOn : ''}`}>
+                              <div className={styles.toggleThumb} />
+                            </div>
+                          ) : (
+                            <span className={styles.settingArrow}>
+                              <ChevronRight size={18} aria-hidden="true" />
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </section>
+            );
+          })}
+        </div>
       </main>
 
-      {/* Shop Name Modal */}
-      <Modal open={activeModal === 'shop'} onClose={() => setActiveModal(null)} title="🏪 Shop Name">
+      <Modal open={activeModal === 'shop'} onClose={() => setActiveModal(null)} title="Shop Name">
         <div className="modal-body">
           <div className="input-group">
             <label className="input-label">Enter your shop name</label>
@@ -320,8 +368,7 @@ export default function SettingsPage() {
         </div>
       </Modal>
 
-      {/* Owner Name Modal */}
-      <Modal open={activeModal === 'owner'} onClose={() => setActiveModal(null)} title="👤 Owner Name">
+      <Modal open={activeModal === 'owner'} onClose={() => setActiveModal(null)} title="Owner Name">
         <div className="modal-body">
           <div className="input-group">
             <label className="input-label">Enter your name</label>
@@ -334,8 +381,7 @@ export default function SettingsPage() {
         </div>
       </Modal>
 
-      {/* Confirm Clear Dialog */}
-      <Modal open={showConfirmClear} onClose={() => setShowConfirmClear(false)} title="⚠️ Clear All Settings?">
+      <Modal open={showConfirmClear} onClose={() => setShowConfirmClear(false)} title="Clear All Settings?">
         <div className="modal-body">
           <p className="body-lg" style={{ color: 'var(--on-surface-variant)' }}>
             This will reset all your settings to defaults. Shop name, owner name, and preferences will be cleared.
@@ -344,9 +390,17 @@ export default function SettingsPage() {
         </div>
         <div className="modal-actions">
           <button className="btn btn-secondary" onClick={() => setShowConfirmClear(false)}>Cancel</button>
-          <button className="btn btn-danger" onClick={confirmClearData}>🗑️ Clear All</button>
+          <button className="btn btn-danger" onClick={confirmClearData}>
+            <Trash2 size={15} aria-hidden="true" />
+            <span>Clear All</span>
+          </button>
         </div>
       </Modal>
+
+      <section className="section" style={{ textAlign: 'center', padding: 'var(--space-8) 0' }}>
+        <p className="body-sm text-muted">Hisaab v1.0.0</p>
+        <p className="label-sm text-muted mt-1">AI-Powered Financial Copilot</p>
+      </section>
     </div>
   );
 }

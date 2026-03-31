@@ -1,13 +1,30 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { Send, Trash2, Bot, TrendingUp, PackageSearch, BarChart3, CircleDollarSign } from 'lucide-react';
 import styles from './page.module.css';
 
 const QUICK_PROMPTS = [
-  { label: '📊 Show my profit this week', value: 'What is my profit this week?' },
-  { label: '📦 Low stock items', value: 'Which items are low in stock?' },
-  { label: '💡 Business tips', value: 'Give me tips to improve my shop business' },
-  { label: '📈 Sales trend', value: 'What is my sales trend for the last 7 days?' },
+  {
+    label: 'Show my profit this week',
+    value: 'What is my profit this week?',
+    Icon: TrendingUp,
+  },
+  {
+    label: 'Low stock items',
+    value: 'Which items are low in stock?',
+    Icon: PackageSearch,
+  },
+  {
+    label: 'Sales trend',
+    value: 'What is my sales trend for the last 7 days?',
+    Icon: BarChart3,
+  },
+  {
+    label: 'Cash flow summary',
+    value: 'Give me a cash flow summary for this month',
+    Icon: CircleDollarSign,
+  },
 ];
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000/api';
@@ -84,7 +101,7 @@ export default function ChatbotPage() {
     <div className={styles.chatContainer}>
       <header className="page-header">
         <div className="page-header-title">
-          <h1 className="headline-sm">🤖 AI Assistant</h1>
+          <h1 className="headline-sm"><Bot size={20} style={{display: 'inline-block', marginRight: '0.5rem'}} /> AI Assistant</h1>
           <span className="body-sm text-muted">RAG-powered financial chatbot</span>
         </div>
         <button
@@ -95,56 +112,61 @@ export default function ChatbotPage() {
             timestamp: new Date(),
           }])}
         >
-          🗑️ Clear
+          <Trash2 size={16} /> Clear
         </button>
       </header>
 
       {/* Chat Messages Area */}
       <div className={styles.messagesArea}>
-        {messages.map((msg, i) => (
-          <div key={i} className={`${styles.messageBubble} ${msg.role === 'user' ? styles.userMessage : styles.assistantMessage} ${msg.isError ? styles.errorMessage : ''}`}>
-            {msg.role === 'assistant' && (
-              <div className={styles.avatarIcon}>🤖</div>
-            )}
-            <div className={styles.messageContent}>
-              <div className={styles.messageText}>
-                {msg.content.split('\n').map((line, li) => (
-                  <span key={li}>
-                    {line}
-                    {li < msg.content.split('\n').length - 1 && <br />}
-                  </span>
-                ))}
+        <div className={styles.messagesTrack}>
+          {messages.map((msg, i) => (
+            <div key={i} className={`${styles.messageBubble} ${msg.role === 'user' ? styles.userMessage : styles.assistantMessage} ${msg.isError ? styles.errorMessage : ''}`}>
+              {msg.role === 'assistant' && (
+                <div className={styles.avatarIcon}><Bot size={18} /></div>
+              )}
+              <div className={styles.messageContent}>
+                <div className={styles.messageText}>
+                  {msg.content.split('\n').map((line, li) => (
+                    <span key={li}>
+                      {line}
+                      {li < msg.content.split('\n').length - 1 && <br />}
+                    </span>
+                  ))}
+                </div>
+                <span className={styles.messageTime}>{formatTime(msg.timestamp)}</span>
               </div>
-              <span className={styles.messageTime}>{formatTime(msg.timestamp)}</span>
             </div>
-          </div>
-        ))}
+          ))}
 
-        {isLoading && (
-          <div className={`${styles.messageBubble} ${styles.assistantMessage}`}>
-            <div className={styles.avatarIcon}>🤖</div>
-            <div className={styles.messageContent}>
-              <div className={styles.typingIndicator}>
-                <span /><span /><span />
+          {isLoading && (
+            <div className={`${styles.messageBubble} ${styles.assistantMessage}`}>
+              <div className={styles.avatarIcon}><Bot size={18} /></div>
+              <div className={styles.messageContent}>
+                <div className={styles.typingIndicator}>
+                  <span /><span /><span />
+                </div>
               </div>
             </div>
-          </div>
-        )}
-        <div ref={chatEndRef} />
+          )}
+          <div ref={chatEndRef} />
+        </div>
       </div>
 
       {/* Quick Prompts */}
       {messages.length <= 2 && (
-        <div className={styles.quickPrompts}>
-          {QUICK_PROMPTS.map((prompt, i) => (
-            <button
-              key={i}
-              className={styles.quickPromptBtn}
-              onClick={() => sendMessage(prompt.value)}
-            >
-              {prompt.label}
-            </button>
-          ))}
+        <div className={styles.quickPromptsOuter}>
+          <div className={styles.quickPrompts}>
+            {QUICK_PROMPTS.map((prompt, i) => (
+              <button
+                key={i}
+                className={styles.quickPromptBtn}
+                onClick={() => sendMessage(prompt.value)}
+              >
+                <prompt.Icon size={15} />
+                {prompt.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -170,7 +192,7 @@ export default function ChatbotPage() {
           >
             {isLoading ? (
               <span className="spinner" style={{ width: '1.25rem', height: '1.25rem' }} />
-            ) : '↗'}
+            ) : <Send size={18} />}
           </button>
         </div>
       </div>

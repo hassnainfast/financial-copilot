@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { startManualEntry, continueManualEntry, getAudioUrl, listInventory } from '@/lib/api';
 import { DEFAULT_USER_ID, CATEGORIES, formatCurrency } from '@/lib/constants';
+import { DollarSign, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import Toast from '@/components/Toast';
 import styles from './page.module.css';
 
@@ -105,6 +106,7 @@ export default function ManualEntryPage() {
           ←
         </button>
         <div>
+          <FileText size={24} className="text-primary" style={{ marginBottom: '0.25rem' }} />
           <h1 className="title-lg">دستی اندراج</h1>
           <span className="body-sm text-muted">Manual Entry</span>
         </div>
@@ -256,8 +258,9 @@ export default function ManualEntryPage() {
 
             {error && (
               <div className="section">
-                <div className="badge badge-danger" style={{ padding: 'var(--space-3) var(--space-4)', width: '100%', justifyContent: 'center' }}>
-                  ⚠️ {error}
+                <div className="badge badge-danger" style={{ padding: 'var(--space-3) var(--space-4)', width: '100%', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <AlertCircle size={18} />
+                  {error}
                 </div>
               </div>
             )}
@@ -271,7 +274,10 @@ export default function ManualEntryPage() {
               {loading ? (
                 <span className="spinner" style={{ width: '1.25rem', height: '1.25rem' }} />
               ) : (
-                <>محفوظ کریں | Save</>
+                <>
+                  <DollarSign size={20} />
+                  محفوظ کریں | Save
+                </>
               )}
             </button>
           </form>
@@ -336,7 +342,10 @@ export default function ManualEntryPage() {
                 {loading ? (
                   <span className="spinner" style={{ width: '1.25rem', height: '1.25rem' }} />
                 ) : (
-                  <>✓ تصدیق Confirm</>
+                  <>
+                    <CheckCircle size={20} />
+                    تصدیق Confirm
+                  </>
                 )}
               </button>
             </div>
@@ -345,7 +354,9 @@ export default function ManualEntryPage() {
 
         {step === 'complete' && (
           <div className="animate-scale-in" style={{ textAlign: 'center', padding: 'var(--space-16) 0' }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: 'var(--space-4)' }}>✅</div>
+            <div style={{ fontSize: '3.5rem', marginBottom: 'var(--space-4)' }}>
+              <CheckCircle size={80} className="text-success" />
+            </div>
             <h2 className="headline-md text-primary mb-2">محفوظ ہو گیا!</h2>
             <p className="body-lg text-muted mb-6">Transaction saved successfully</p>
             

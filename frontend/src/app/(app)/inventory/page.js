@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { listInventory, deleteInventoryItem } from '@/lib/api';
 import { DEFAULT_USER_ID, formatCurrency } from '@/lib/constants';
+import { Package, AlertCircle, RefreshCw, Trash2, Search } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function InventoryPage() {
@@ -68,7 +69,7 @@ export default function InventoryPage() {
           <span className="body-sm text-muted">Manage your stock</span>
         </div>
         <button className="header-icon-btn" onClick={loadInventory} aria-label="Refresh">
-          🔄
+          <RefreshCw size={20} />
         </button>
       </header>
 
@@ -98,7 +99,7 @@ export default function InventoryPage() {
         {/* Search */}
         <section className="section">
           <div className="search-bar">
-            <span className="search-icon">🔍</span>
+            <Search size={18} className="search-icon" />
             <input
               type="text"
               placeholder="Search items..."
@@ -119,13 +120,14 @@ export default function InventoryPage() {
             </div>
           ) : error ? (
             <div className={styles.errorCard}>
-              <p>⚠️ Could not load inventory</p>
+              <AlertCircle size={32} style={{margin: '0 auto 8px'}} />
+              <p>Could not load inventory</p>
               <p className="body-sm text-muted">{error}</p>
               <button className="btn btn-outline btn-sm mt-4" onClick={loadInventory}>Retry</button>
             </div>
           ) : filteredItems.length === 0 ? (
             <div className="empty-state">
-              <span className="empty-state-icon">📦</span>
+              <Package size={48} className="empty-state-icon" />
               <p className="empty-state-title">
                 {searchQuery ? 'No items found' : 'Inventory is empty'}
               </p>
@@ -140,7 +142,7 @@ export default function InventoryPage() {
                 return (
                   <div key={item.id} className="glass-card" style={{ padding: 'var(--space-4)' }}>
                     <div className="flex items-center gap-3">
-                      <div className={styles.itemIcon}>📦</div>
+                      <div className={styles.itemIcon}><Package size={24} /></div>
                       <div className="flex-1">
                         <div className="flex justify-between items-center">
                           <span className="title-sm">{item.item_name}</span>

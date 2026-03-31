@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { listTransactions } from '@/lib/api';
 import { DEFAULT_USER_ID, formatCurrency, getCategoryInfo, formatDate } from '@/lib/constants';
+import { ArrowUp, ArrowDown, FileText, Image, Mic } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function TransactionDetailPage() {
@@ -86,8 +87,18 @@ export default function TransactionDetailPage() {
       <main className="page-content animate-fade-in">
         {/* Amount Hero */}
         <section className={styles.amountHero}>
-          <span className={`badge ${isIncome ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: '0.875rem', padding: 'var(--space-2) var(--space-4)' }}>
-            {isIncome ? '↑ آمدنی Income' : '↓ خرچ Expense'}
+          <span className={`badge ${isIncome ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: '0.875rem', padding: 'var(--space-2) var(--space-4)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {isIncome ? (
+              <>
+                <ArrowUp size={16} />
+                آمدنی Income
+              </>
+            ) : (
+              <>
+                <ArrowDown size={16} />
+                خرچ Expense
+              </>
+            )}
           </span>
           <div className={`number-hero ${isIncome ? 'amount-income' : 'amount-expense'} ${styles.heroAmount}`}>
             {isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}
@@ -122,11 +133,28 @@ export default function TransactionDetailPage() {
 
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>ذریعہ • Source</span>
-              <span className={`badge badge-info`}>
-                {transaction.source === 'manual' && '✏️ Manual'}
-                {transaction.source === 'image' && '📷 Image'}
-                {transaction.source === 'audio' && '🎙️ Voice'}
-                {!transaction.source && '📋 Other'}
+              <span className={`badge badge-info`} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: 'fit-content' }}>
+                {transaction.source === 'manual' && (
+                  <>
+                    <FileText size={16} />
+                    Manual
+                  </>
+                )}
+                {transaction.source === 'image' && (
+                  <>
+                    <Image size={16} />
+                    Image
+                  </>
+                )}
+                {transaction.source === 'audio' && (
+                  <>
+                    <Mic size={16} />
+                    Voice
+                  </>
+                )}
+                {!transaction.source && (
+                  <>📋 Other</>
+                )}
               </span>
             </div>
 

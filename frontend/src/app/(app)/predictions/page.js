@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { listTransactions } from '@/lib/api';
 import { DEFAULT_USER_ID, formatCurrency } from '@/lib/constants';
+import { TrendingUp, TrendingDown, AlertCircle, Star, Lightbulb, DollarSign } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function PredictionsPage() {
@@ -84,17 +85,17 @@ export default function PredictionsPage() {
               </div>
               <div className="quick-actions-grid">
                 <div className="glass-card flex flex-col items-center text-center gap-2">
-                  <div className={styles.iconCircle} style={{ background: 'rgba(104, 219, 169, 0.15)', color: 'var(--primary)' }}>💰</div>
+                  <div className={styles.iconCircle} style={{ background: 'rgba(104, 219, 169, 0.15)', color: 'var(--primary)' }}><DollarSign size={32} /></div>
                   <span className="title-sm text-muted">Expected Income</span>
                   <span className="number-lg text-primary">{formatCurrency(predictions.nextMonth.income)}</span>
                 </div>
                 <div className="glass-card flex flex-col items-center text-center gap-2">
-                  <div className={styles.iconCircle} style={{ background: 'rgba(255, 179, 173, 0.15)', color: 'var(--tertiary)' }}>📉</div>
+                  <div className={styles.iconCircle} style={{ background: 'rgba(255, 179, 173, 0.15)', color: 'var(--tertiary)' }}><TrendingDown size={32} /></div>
                   <span className="title-sm text-muted">Expected Expenses</span>
                   <span className="number-lg text-tertiary">{formatCurrency(predictions.nextMonth.expense)}</span>
                 </div>
                 <div className="glass-card flex flex-col items-center text-center gap-2" style={{ gridColumn: 'span 2' }}>
-                  <div className={styles.iconCircle} style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6' }}>📈</div>
+                  <div className={styles.iconCircle} style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6' }}><TrendingUp size={32} /></div>
                   <span className="title-sm text-muted">Projected Profit</span>
                   <span className="number-hero" style={{ color: '#3b82f6' }}>{formatCurrency(predictions.nextMonth.profit)}</span>
                 </div>
@@ -110,9 +111,9 @@ export default function PredictionsPage() {
                 {predictions.insights.map((insight, i) => (
                   <div key={i} className={`glass-card ${styles.insightCard} ${styles[insight.type]}`}>
                     <div className={styles.insightIcon}>
-                      {insight.type === 'positive' && '🌟'}
-                      {insight.type === 'warning' && '⚠️'}
-                      {insight.type === 'neutral' && '💡'}
+                      {insight.type === 'positive' && <Star size={24} />}
+                      {insight.type === 'warning' && <AlertCircle size={24} />}
+                      {insight.type === 'neutral' && <Lightbulb size={24} />}
                     </div>
                     <div>
                       <h3 className="title-sm mb-1">{insight.title}</h3>

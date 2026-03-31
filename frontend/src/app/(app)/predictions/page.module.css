@@ -13,9 +13,20 @@
   display: flex;
   gap: var(--space-4);
   align-items: flex-start;
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-5) var(--space-6);
   border-left-width: 4px;
   border-left-style: solid;
+  border-radius: var(--radius-lg);
+  background: var(--surface-container);
+  border: 1px solid var(--glass-border);
+  border-left-width: 4px;
+  transition: all var(--transition-normal);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.insightCard:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .insightCard.positive { border-left-color: var(--primary); }

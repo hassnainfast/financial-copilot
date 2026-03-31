@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { scanReceiptImage, continueImageEntry, getAudioUrl } from '@/lib/api';
 import { DEFAULT_USER_ID, formatCurrency } from '@/lib/constants';
+import { Camera, Upload, CheckCircle } from 'lucide-react';
 import Toast from '@/components/Toast';
 import styles from './page.module.css';
 
@@ -143,7 +144,7 @@ export default function ImageEntryPage() {
               className={styles.uploadArea}
               onClick={() => fileInputRef.current?.click()}
             >
-              <div className={styles.uploadIcon}>📷</div>
+              <div className={styles.uploadIcon}><Camera size={48} /></div>
               <h3 className="title-md mt-4">رسید کی تصویر لیں</h3>
               <p className="body-sm text-muted mt-2">Take a photo or upload receipt</p>
               <div className={styles.uploadHint}>
@@ -162,8 +163,8 @@ export default function ImageEntryPage() {
             />
 
             {error && (
-              <div className="badge badge-danger mt-4" style={{ padding: 'var(--space-3) var(--space-4)', width: '100%', justifyContent: 'center' }}>
-                ⚠️ {error}
+              <div className="badge badge-danger mt-4" style={{ padding: 'var(--space-3) var(--space-4)', width: '100%', justifyContent: 'center', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <span>⚠️</span> {error}
               </div>
             )}
           </div>

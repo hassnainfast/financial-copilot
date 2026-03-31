@@ -1,18 +1,36 @@
 .headerUrdu { font-family: var(--font-urdu); font-size: 1.5rem; font-weight: 700; line-height: 2; direction: rtl; color: var(--on-surface); }
 .headerEn { font-size: 0.75rem; color: var(--on-surface-variant); }
 
-.summaryCard { transition: transform var(--transition-normal), box-shadow var(--transition-normal); }
-.summaryCard:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.summaryCard {
+  background: var(--surface-container);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal), background var(--transition-normal);
+  border: 1px solid var(--glass-border);
+}
+.summaryCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  background: var(--surface-container-high);
+}
 
-.profitSection { }
-.profitCard { }
-.profitHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3); }
+.profitSection { margin-bottom: var(--space-8); }
+.profitCard {
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+}
+.profitHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); gap: var(--space-3); }
 
 .errorCard {
-  background: rgba(255, 179, 173, 0.06);
-  border: 1px solid rgba(255, 84, 81, 0.15);
+  background: var(--surface-container-low);
+  border: 1.5px solid var(--outline);
   border-radius: var(--radius-xl);
-  padding: var(--space-8);
+  padding: var(--space-8) var(--space-6);
   text-align: center;
 }
 
@@ -20,21 +38,23 @@
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: var(--surface-container-low);
+  border: 1.5px solid var(--outline);
   border-radius: var(--radius-xl);
   padding: var(--space-5) var(--space-6);
 }
 
 .businessIcon {
-  width: 3rem; height: 3rem;
+  width: 3.5rem;
+  height: 3.5rem;
   border-radius: var(--radius-lg);
-  background: rgba(104, 219, 169, 0.12);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.5rem;
+  background: var(--surface-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
   flex-shrink: 0;
+  color: var(--primary);
 }
 
 .businessBanner .flex-1 { flex: 1; }

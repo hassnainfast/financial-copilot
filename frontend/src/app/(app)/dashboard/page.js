@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { listTransactions } from '@/lib/api';
 import { DEFAULT_USER_ID, formatCurrency, getCategoryInfo, formatRelativeTime } from '@/lib/constants';
+import { Bell, Store, Pencil, Camera, Mic, Package, FileText } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function DashboardPage() {
@@ -68,7 +69,9 @@ export default function DashboardPage() {
           </span>
         </div>
         <div className="page-header-icons">
-          <button className="header-icon-btn" id="notifications-btn" aria-label="Notifications">🔔</button>
+          <button className="header-icon-btn" id="notifications-btn" aria-label="Notifications">
+            <Bell size={20} />
+          </button>
         </div>
       </header>
 
@@ -77,13 +80,13 @@ export default function DashboardPage() {
         {(shopName || ownerName) && (
           <section className="section animate-fade-in">
             <div className={styles.businessBanner}>
-              <div className={styles.businessIcon}>🏪</div>
+              <div className={styles.businessIcon}><Store size={28} /></div>
               <div>
                 <div className="title-md">{shopName || 'My Shop'}</div>
                 {ownerName && <div className="body-sm text-muted">Owner: {ownerName}</div>}
               </div>
               <button className="btn btn-ghost btn-sm" onClick={() => router.push('/settings')}>
-                Edit ✏️
+                <Pencil size={16} /> Edit
               </button>
             </div>
           </section>
@@ -140,25 +143,25 @@ export default function DashboardPage() {
           </div>
           <div className="quick-actions-grid stagger-children">
             <button className="quick-action" onClick={() => router.push('/entry/image')} id="quick-photo-entry">
-              <span className="quick-action-icon photo">📷</span>
+              <span className="quick-action-icon photo"><Camera size={20} /></span>
               <div className="quick-action-text">
                 <span className="title">Photo Entry</span>
               </div>
             </button>
             <button className="quick-action" onClick={() => router.push('/entry/voice')} id="quick-voice-entry">
-              <span className="quick-action-icon voice">🎙️</span>
+              <span className="quick-action-icon voice"><Mic size={20} /></span>
               <div className="quick-action-text">
                 <span className="title">Voice Entry</span>
               </div>
             </button>
             <button className="quick-action" onClick={() => router.push('/inventory')} id="quick-inventory">
-              <span className="quick-action-icon inventory">📦</span>
+              <span className="quick-action-icon inventory"><Package size={20} /></span>
               <div className="quick-action-text">
                 <span className="title">Inventory</span>
               </div>
             </button>
             <button className="quick-action" onClick={() => router.push('/entry/manual')} id="quick-manual-entry">
-              <span className="quick-action-icon manual">✏️</span>
+              <span className="quick-action-icon manual"><FileText size={20} /></span>
               <div className="quick-action-text">
                 <span className="title">Manual Entry</span>
               </div>

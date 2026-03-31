@@ -13,15 +13,17 @@
 }
 
 .micCircle {
-  width: 6rem;
-  height: 6rem;
+  width: 7rem;
+  height: 7rem;
   border-radius: var(--radius-full);
-  background: rgba(104, 219, 169, 0.1);
+  background: linear-gradient(135deg, rgba(104, 219, 169, 0.15), rgba(104, 219, 169, 0.05));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
-  box-shadow: var(--shadow-glow);
+  font-size: 3rem;
+  color: var(--primary);
+  box-shadow: 0 8px 24px rgba(104, 219, 169, 0.15), var(--shadow-glow);
+  border: 2px solid rgba(104, 219, 169, 0.2);
 }
 
 .chatArea {
@@ -39,18 +41,22 @@
   padding: var(--space-4);
   border-radius: var(--radius-xl);
   animation: fadeIn 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .assistantBubble {
   background: var(--surface-container);
   align-self: flex-start;
   border-bottom-left-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
 }
 
 .userBubble {
-  background: rgba(104, 219, 169, 0.12);
+  background: var(--gradient-primary);
   align-self: flex-end;
   border-bottom-right-radius: var(--radius-sm);
+  color: var(--on-primary);
+  border: none;
 }
 
 .chatText {
@@ -69,22 +75,24 @@
 }
 
 .recordBtn {
-  width: 4.5rem;
-  height: 4.5rem;
+  width: 5rem;
+  height: 5rem;
   border-radius: var(--radius-full);
-  background: var(--surface-container-high);
+  background: linear-gradient(135deg, var(--surface-container), var(--surface-container-high));
   border: 3px solid var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.75rem;
+  font-size: 2rem;
+  color: var(--primary);
   cursor: pointer;
   transition: all var(--transition-normal);
+  box-shadow: 0 4px 16px rgba(104, 219, 169, 0.15);
 }
 
 .recordBtn:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-glow);
+  transform: scale(1.08);
+  box-shadow: 0 8px 24px rgba(104, 219, 169, 0.25), var(--shadow-glow);
 }
 
 .recordBtn:active {
