@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import transactions
+from app.routes import transactions, inventory
 from app.config import AUDIO_DIR
 import os
 
@@ -21,6 +21,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(transactions.router, prefix="/api")
+app.include_router(inventory.router, prefix="/api")
 
 # Ensure static directory exists
 os.makedirs(AUDIO_DIR, exist_ok=True)

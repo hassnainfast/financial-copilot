@@ -1,7 +1,12 @@
 import asyncio
 import os
 from typing import Optional
-import edge_tts
+try:
+    import edge_tts
+    EDGE_TTS_AVAILABLE = True
+except ImportError:
+    EDGE_TTS_AVAILABLE = False
+    edge_tts = None
 from app.config import AUDIO_LANGUAGE, AUDIO_DIR
 
 class TTSService:
@@ -28,6 +33,10 @@ class TTSService:
         Returns:
             Relative path to audio file or None if failed
         """
+        if not EDGE_TTS_AVAILABLE:
+            print("TTS service not available: edge-tts package not installed")
+            return None
+            
         try:
             voice_name = self.URDU_VOICES.get(voice, self.URDU_VOICES["male"])
             filepath = os.path.join(AUDIO_DIR, filename)

@@ -1,11 +1,19 @@
-import speech_recognition as sr
+try:
+    import speech_recognition as sr
+    SPEECH_RECOGNITION_AVAILABLE = True
+except ImportError:
+    SPEECH_RECOGNITION_AVAILABLE = False
+    sr = None
 from typing import Optional
 
 class STTService:
     """Speech-to-Text service for Urdu input."""
     
     def __init__(self):
-        self.recognizer = sr.Recognizer()
+        if SPEECH_RECOGNITION_AVAILABLE:
+            self.recognizer = sr.Recognizer()
+        else:
+            self.recognizer = None
     
     async def transcribe_audio(self, audio_file_path: str, language: str = "ur-PK") -> Optional[str]:
         """
@@ -18,6 +26,9 @@ class STTService:
         Returns:
             Transcribed text or None if failed
         """
+        if not SPEECH_RECOGNITION_AVAILABLE:
+            print("STT service not available: speech_recognition package not installed")
+            return None
         try:
             with sr.AudioFile(audio_file_path) as source:
                 audio_data = self.recognizer.record(source)

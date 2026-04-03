@@ -1,13 +1,18 @@
 import json
 from typing import Dict, Any, List
 from app.services.llm.groq_client import GroqClient
-from app.services.llm.gemini_client import GeminiClient
+try:
+    from app.services.llm.gemini_client import GeminiClient
+    GEMINI_AVAILABLE = True
+except ImportError:
+    GEMINI_AVAILABLE = False
+    GeminiClient = None
 from app.prompts.extraction_prompt import IMAGE_ANALYSIS_PROMPT
 
 class LLMOrchestrator:
     def __init__(self):
         self.groq = GroqClient()
-        self.gemini = GeminiClient()
+        self.gemini = GeminiClient() if GEMINI_AVAILABLE else None
     
     async def extract_transaction_data(self, text: str) -> Dict[str, Any]:
         prompt = f'Extract transaction from: "{text}". Return JSON with amount, type, category, customer_name.'
@@ -40,6 +45,8 @@ class LLMOrchestrator:
         return result
     
     async def analyze_receipt(self, image_bytes: bytes):
+        if not self.gemini:
+            raise Exception("Gemini client not available. Please install google-generativeai package.")
         prompt = "Analyze receipt. Return JSON list with amount, type, category, customer_name."
         response_text = await self.gemini.generate_from_image(image_bytes, prompt)
         clean_text = response_text.replace('```json', '').replace('```', '').strip()
@@ -120,6 +127,8 @@ class LLMOrchestrator:
     
     async def analyze_receipt(self, image_bytes: bytes) -> Dict[str, Any]:
         """Analyze receipt image and extract line items."""
+        if not self.gemini:
+            raise Exception("Gemini client not available. Please install google-generativeai package.")
         try:
             print(f"📸 Analyzing image: {len(image_bytes)} bytes")
             
