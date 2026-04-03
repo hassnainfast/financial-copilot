@@ -13,12 +13,12 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" dir="ltr">
+    <html lang="en" dir="ltr" suppressHydrationWarning={true}>
       <head>
         <meta name="theme-color" content="#0b1326" />
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body>
+      <body suppressHydrationWarning={true}>
         <div className="app-shell">
           {children}
         </div>

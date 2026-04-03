@@ -28,7 +28,9 @@ async def start_manual_entry(
     category: str = Form(...),
     customer_name: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
-    transaction_date: Optional[str] = Form(None)
+    transaction_date: Optional[str] = Form(None),
+    item_name: Optional[str] = Form(None),
+    quantity: Optional[int] = Form(None)
 ):
     """Start manual transaction entry workflow."""
     
@@ -40,7 +42,9 @@ async def start_manual_entry(
         "customer_name": customer_name or "Cash Customer",
         "description": description or "",
         "transaction_date": transaction_date or str(datetime.now().date()),
-        "source": "manual"
+        "source": "manual",
+        "item_name": item_name,
+        "quantity": quantity
     }
     
     state = WorkflowState(workflow_type="manual_entry")
