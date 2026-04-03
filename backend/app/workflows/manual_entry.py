@@ -2,6 +2,7 @@ from typing import Dict, Any
 from app.workflows.base import BaseWorkflow, WorkflowState
 from app.services.llm.orchestrator import LLMOrchestrator
 from app.services.audio.tts_service import TTSService
+from app.services.inventory_service import InventoryService
 from app.database import supabase
 from datetime import date
 import json
@@ -21,6 +22,7 @@ class ManualEntryWorkflow(BaseWorkflow):
         super().__init__(state)
         self.llm = LLMOrchestrator()
         self.tts = TTSService()
+        self.inventory = InventoryService()
     
     async def execute_step(self, step: str, user_input: Any) -> Dict[str, Any]:
         """Execute workflow step based on current state."""
@@ -180,8 +182,34 @@ class ManualEntryWorkflow(BaseWorkflow):
                     "source": "manual"
                 }).execute()
                 
+                # Update Inventory if applicable
+                inventory_msg = ""
+                item_name = tx.get("item_name")
+                if item_name:
+                    qty = tx.get("quantity")
+                    if qty is None:
+                        qty = 1
+                    
+                    item_to_update = {
+                        "item_name": item_name,
+                        "quantity": int(qty),
+                        "amount": tx["amount"],
+                        "category": tx.get("category", "General")
+                    }
+                    
+                    # Update inventory
+                    await self.inventory.update_inventory_for_items(
+                        user_id=tx["user_id"],
+                        items=[item_to_update],
+                        transaction_type=tx_type
+                    )
+                    inventory_msg = " انوینٹری اپڈیٹ ہو گیا۔"
+                
                 message = f"Success! {tx['amount']} rupees saved."
                 urdu_message = await self.llm.generate_audio_script(message, "success")
+                if inventory_msg:
+                    urdu_message += inventory_msg
+
                 audio_path = await self.tts.generate_audio(
                     urdu_message,
                     f"manual_success_{self.state.session_id}.mp3"
@@ -191,7 +219,7 @@ class ManualEntryWorkflow(BaseWorkflow):
                 
                 return {
                     "next_step": "complete",
-                    "message": message,
+                    "message": message + (" Inventory updated." if inventory_msg else ""),
                     "audio_url": f"/{audio_path}".replace("\\", "/") if audio_path else None,
                     "data": {"transaction_id": result.data[0]["id"] if result.data else None},
                     "is_complete": True
